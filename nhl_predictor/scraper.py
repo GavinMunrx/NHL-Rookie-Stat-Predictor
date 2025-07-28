@@ -25,6 +25,6 @@ def run_scraping():
         # except Exception as e:
         #     print(f"Error scraping NHL rookies {season}: {e}")
 
-    pd.DataFrame(all_amateur).to_csv("data/raw/amateur_all.csv", index=False)
+    pd.DataFrame(all_amateur).to_csv("data/raw/amateur_all_test.csv", index=False)
     pd.DataFrame(all_nhl).to_csv("data/raw/nhl_rookies_all.csv", index=False)
     print(f"Saved {len(all_amateur)} amateur players, {len(all_nhl)} NHL rookies.")

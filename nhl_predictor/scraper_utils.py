@@ -1,11 +1,12 @@
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
+# from selenium import webdriver
+# from selenium.webdriver.chrome.service import Service
+# from selenium.webdriver.chrome.options import Options
+# from selenium.webdriver.common.by import By
+# from selenium.webdriver.support.ui import WebDriverWait
+# from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
 from bs4 import BeautifulSoup
+import requests
 import time
 import csv
 
@@ -19,32 +20,40 @@ def scrape_eliteprospects_league_season(league_id, season_label):
     url = f"https://www.eliteprospects.com/league/{league_id}/stats/{season_label}"
     print(f"Scraping {league_id} {season_label} → {url}")
 
-    options = Options()
-    options.headless = False
-    options.add_argument("--no-sandbox")
-    options.add_argument("--disable-dev-shm-usage")
+    # options = Options()
+    # options.add_argument("--headless=new")  # <- preferred for latest Chrome
+    # options.add_argument("--no-sandbox")
+    # options.add_argument("--disable-dev-shm-usage")
 
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
-    driver.get(url)
+    # driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+    # driver.get(url)
 
     # Scroll multiple times to trigger lazy loading
-    for _ in range(5):
-        driver.execute_script("window.scrollBy(0, 500);")
-        time.sleep(1.5)
+    # for _ in range(5):
+    #     driver.execute_script("window.scrollBy(0, 500);")
+    #     time.sleep(1.5)
 
-    try:
-        WebDriverWait(driver, 15).until(
-            EC.presence_of_element_located((By.TAG_NAME, "table"))
-        )
-    except Exception as e:
-        print(f"❌ Timed out waiting for table: {e}")
-        driver.quit()
+    # try:
+    #     WebDriverWait(driver, 15).until(
+    #         EC.presence_of_element_located((By.TAG_NAME, "table"))
+    #     )
+    # except Exception as e:
+    #     print(f"❌ Timed out waiting for table: {e}")
+    #     driver.quit()
+    #     return []
+
+    # html = driver.page_source
+    # driver.quit()
+    headers = {
+        "User-Agent": "Mozilla/5.0"
+    }
+
+    response = requests.get(url, headers=headers)
+    if response.status_code != 200:
+        print(f"❌ Failed to load page: {response.status_code}")
         return []
 
-    html = driver.page_source
-    driver.quit()
-
-    soup = BeautifulSoup(html, "html.parser")
+    soup = BeautifulSoup(response.text, "html.parser")
     tables = soup.find_all("table")
     print(f"Found {len(tables)} tables on page")
 
@@ -92,4 +101,4 @@ def write_players_to_csv(players, filename):
 if __name__ == "__main__":
     players = scrape_eliteprospects_league_season("ohl", "2023-2024")
     if players:
-        write_players_to_csv(players, "ohl_2023_2024_stats.csv")
+        write_players_to_csv(players, "data/raw/ohl_2023_2024_stats.csv")

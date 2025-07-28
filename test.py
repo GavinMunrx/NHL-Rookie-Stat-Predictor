@@ -1,22 +1,15 @@
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options
-from webdriver_manager.chrome import ChromeDriverManager
+import requests
+from bs4 import BeautifulSoup
 
-options = Options()
-options.add_argument("--headless")  # Remove this line to see the browser open
-options.add_argument("--no-sandbox")
-options.add_argument("--disable-dev-shm-usage")
+url = "https://www.eliteprospects.com/league/ohl/stats/2023-2024"
+headers = {"User-Agent": "Mozilla/5.0"}
 
-try:
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
-    driver.get("https://www.google.com")
+resp = requests.get(url, headers=headers)
+soup = BeautifulSoup(resp.text, "html.parser")
 
-    print("Page title:", driver.title)
+tables = soup.find_all("table")
+print(f"Found {len(tables)} tables")
 
-    with open("google_page.html", "w", encoding="utf-8") as f:
-        f.write(driver.page_source)
-
-    driver.quit()
-except Exception as e:
-    print("❌ Error launching Selenium:", e)
+# Try printing the 3rd table (usually the stats one)
+if len(tables) >= 3:
+    print(tables[2].prettify())
