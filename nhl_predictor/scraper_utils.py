@@ -1,14 +1,10 @@
-# from selenium import webdriver
-# from selenium.webdriver.chrome.service import Service
-# from selenium.webdriver.chrome.options import Options
-# from selenium.webdriver.common.by import By
-# from selenium.webdriver.support.ui import WebDriverWait
-# from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
 from bs4 import BeautifulSoup
 import requests
 import time
 import csv
+
+headers = {"User-Agent": "Mozilla/5.0"}
 
 def safe_int(text):
     try:
@@ -20,33 +16,6 @@ def scrape_eliteprospects_league_season(league_id, season_label):
     url = f"https://www.eliteprospects.com/league/{league_id}/stats/{season_label}"
     print(f"Scraping {league_id} {season_label} → {url}")
 
-    # options = Options()
-    # options.add_argument("--headless=new")  # <- preferred for latest Chrome
-    # options.add_argument("--no-sandbox")
-    # options.add_argument("--disable-dev-shm-usage")
-
-    # driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
-    # driver.get(url)
-
-    # Scroll multiple times to trigger lazy loading
-    # for _ in range(5):
-    #     driver.execute_script("window.scrollBy(0, 500);")
-    #     time.sleep(1.5)
-
-    # try:
-    #     WebDriverWait(driver, 15).until(
-    #         EC.presence_of_element_located((By.TAG_NAME, "table"))
-    #     )
-    # except Exception as e:
-    #     print(f"❌ Timed out waiting for table: {e}")
-    #     driver.quit()
-    #     return []
-
-    # html = driver.page_source
-    # driver.quit()
-    headers = {
-        "User-Agent": "Mozilla/5.0"
-    }
 
     response = requests.get(url, headers=headers)
     if response.status_code != 200:
