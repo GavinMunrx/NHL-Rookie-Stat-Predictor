@@ -3,7 +3,7 @@ import os
 import pandas as pd
 
 def run_scraping():
-    leagues = ["ohl"]
+    leagues = ["ohl","whl"]
     season = "2023-2024"
 
     all_amateur = []

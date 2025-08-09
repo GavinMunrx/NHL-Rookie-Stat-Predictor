@@ -19,7 +19,7 @@ def scrape_eliteprospects_league_season(league_id, season_label):
 
     response = requests.get(url, headers=headers)
     if response.status_code != 200:
-        print(f"❌ Failed to load page: {response.status_code}")
+        print(f"Error Loading Page: {response.status_code}")
         return []
 
     soup = BeautifulSoup(response.text, "html.parser")
@@ -27,10 +27,10 @@ def scrape_eliteprospects_league_season(league_id, season_label):
     print(f"Found {len(tables)} tables on page")
 
     if len(tables) < 3:
-        print("❌ Not enough tables found!")
+        print("Error Locating Tables")
         return []
 
-    table = tables[2]  # The detailed stats table
+    table = tables[2]  # The detailed stats table needed on EP
     rows = table.find_all("tr")
 
     players = []
@@ -52,10 +52,10 @@ def scrape_eliteprospects_league_season(league_id, season_label):
             }
             players.append(player)
         except Exception as e:
-            print(f"⚠️ Row {i} skipped: {e}")
+            print(f"Error, Row {i} skipped: {e}")
             continue
 
-    print(f"✅ Scraped {len(players)} players from {league_id} {season_label}")
+    print(f"Scraped {len(players)} players from {league_id} {season_label}")
     return players
 
 def write_players_to_csv(players, filename):
@@ -65,7 +65,7 @@ def write_players_to_csv(players, filename):
         writer.writeheader()
         for player in players:
             writer.writerow(player)
-    print(f"✅ Wrote {len(players)} players to {filename}")
+    print(f"Wrote {len(players)} players data to {filename}")
 
 if __name__ == "__main__":
     players = scrape_eliteprospects_league_season("ohl", "2023-2024")
