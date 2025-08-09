@@ -11,7 +11,7 @@ def run_training():
     league_dummies = pd.get_dummies(df['league'])
     df = pd.concat([df, league_dummies], axis=1)
 
-    X = df[['gp_amateur', 'goals_amateur', 'assists_amateur', 'points_amateur', 'pim_amateur', 'age_amateur'] + list(league_dummies.columns)]
+    X = df[['gp_amateur', 'goals_amateur', 'assists_amateur', 'points_amateur', 'pim_amateur', 'age_amateur', 'height_ameteur', 'weight_ameteur'] + list(league_dummies.columns)]
     y = df['points_nhl']
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
