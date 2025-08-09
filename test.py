@@ -47,3 +47,65 @@ roster_urls = get_team_roster_urls(league_url, season)
 print(f"Found {len(roster_urls)} team roster URLs:")
 for url in roster_urls:
     print(url)
+
+# Test for different NHL data source
+
+headers = {"User-Agent": "Mozilla/5.0"}
+
+def safe_int(text):
+    try:
+        return int(text)
+    except ValueError:
+        return 0
+
+def scrape_nhl_rookie_stats(season):
+    url = f"https://www.statmuse.com/nhl/ask?q=rookie+points+leaders+nhl+2024-25"
+    print(f"Scraping NHL Rookie → {url}")
+
+
+    response = requests.get(url, headers=headers)
+    if response.status_code != 200:
+        print(f"Error Loading Page: {response.status_code}")
+        return []
+
+    soup = BeautifulSoup(response.text, "html.parser")
+    tables = soup.find_all("table")
+    print(f"Found {len(tables)} tables on page")
+
+    if len(tables) < 3:
+        print("Error Locating Tables")
+        return []
+
+    table = tables[9]  # The detailed stats table needed on EP
+    rows = table.find_all("tr")
+
+    players = []
+    for i, row in enumerate(rows):
+        cols = row.find_all("td")
+        if len(cols) < 7:
+            continue
+        try:
+            player = {
+                "rank": cols[0].text.strip(),
+                "name": cols[2].text.strip(),
+                "team": cols[4].text.strip(),
+                "gp": safe_int(cols[6].text.strip()),
+                "goals": safe_int(cols[8].text.strip()),
+                "assists": safe_int(cols[10].text.strip()),
+                "points": safe_int(cols[12].text.strip()),
+                "league": 'NHL',
+                "season": season
+            }
+            players.append(player)
+        except Exception as e:
+            print(f"Error, Row {i} skipped: {e}")
+            continue
+
+    print(f"Scraped {len(players)} players from NHL")
+    return players
+
+season = 26
+rookie = scrape_nhl_rookie_stats(season)
+
+for p in rookie:
+    print(p)

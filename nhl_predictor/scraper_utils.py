@@ -1,4 +1,4 @@
-from webdriver_manager.chrome import ChromeDriverManager
+# from webdriver_manager.chrome import ChromeDriverManager
 from bs4 import BeautifulSoup
 import requests
 import time
@@ -12,7 +12,43 @@ def safe_int(text):
     except ValueError:
         return 0
 
-def scrape_eliteprospects_league_season(league_id, season_label):
+def get_team_roster_urls(league_url, season_label):
+    resp = requests.get(league_url, headers=headers)
+    soup = BeautifulSoup(resp.text, "html.parser")
+    base_url = "https://www.eliteprospects.com"
+    roster_urls = []
+
+    # Find the heading <h2> with text "WHL Team Rosters"
+    heading = soup.find("h2", string="NHL Team Rosters")
+    if not heading:
+        print("'XXXX Team Rosters' heading not found")
+        return []
+
+    # Find the div with id="league-team-rosters" after the heading
+    roster_div = heading.find_next("div", id="league-team-rosters")
+    if not roster_div:
+        print("'league-team-rosters' div not found")
+        return []
+
+    # Find the <ul> containing the teams
+    teams_list = roster_div.find("ul", class_="TeamRoster_teamRoster__y6g5I")
+    if not teams_list:
+        print("Teams list <ul> not found")
+        return []
+
+    # Extract team URLs from the <a> tags inside the <li>s
+    for li in teams_list.find_all("li"):
+        a_tag = li.find("a", href=True)
+        if a_tag:
+            href = a_tag['href']
+            team_base_url = base_url + href.split("?")[0]
+            full_roster_url = f"{team_base_url}/{season_label}#players"
+            if full_roster_url not in roster_urls:
+                roster_urls.append(full_roster_url)
+
+    return roster_urls
+
+def scrape_amateur_eliteprospects_league_season(league_id, season_label):
     url = f"https://www.eliteprospects.com/league/{league_id}/stats/{season_label}"
     print(f"Scraping {league_id} {season_label} → {url}")
 
@@ -58,6 +94,9 @@ def scrape_eliteprospects_league_season(league_id, season_label):
     print(f"Scraped {len(players)} players from {league_id} {season_label}")
     return players
 
+def scrape_nhl_rookie_stats(season):
+    return
+
 def write_players_to_csv(players, filename):
     fieldnames = ["rank", "name", "team", "gp", "goals", "assists", "points", "league", "season"]
     with open(filename, mode="w", newline="", encoding="utf-8") as file:
@@ -67,7 +106,4 @@ def write_players_to_csv(players, filename):
             writer.writerow(player)
     print(f"Wrote {len(players)} players data to {filename}")
 
-if __name__ == "__main__":
-    players = scrape_eliteprospects_league_season("ohl", "2023-2024")
-    if players:
-        write_players_to_csv(players, "data/raw/ohl_2023_2024_stats.csv")
+

@@ -5,4 +5,4 @@ if __name__ == "__main__":
     print("Step 1: Scraping data...")
     run_scraping()
     
-    run_training() 
+    # run_training() 
