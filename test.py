@@ -137,3 +137,70 @@ league = 'nhl'
 
 merged_df = pd.merge(scrape_nhl_roster(get_team_roster_urls(league, season)), scrape_nhl_player_stats('nhl', '2023-2024'), left_on='Name', right_on='name', how='inner')
 print(merged_df)
+
+
+import pandas as pd
+import os
+
+def clean_data(input_csv="data/nhl_all_t.csv", output_csv="data/processed/cleaned.csv"):
+    print(f"Loading data from {input_csv}...")
+    df = pd.read_csv(input_csv)
+
+    df['height'] = df['height'].str.replace('"', '', regex=False)
+
+    # Standardize column names
+    df.columns = df.columns.str.strip().str.lower()
+
+    # Ensure season is sorted properly
+    df = df.sort_values(["name", "season"])
+
+    # Shift previous season NHL games
+    df['gp_prev_season'] = df.groupby('name')['gp'].shift(1).fillna(0)
+    df['gp_two_seasons_ago'] = df.groupby('name')['gp'].shift(2).fillna(0)
+
+    # Calculate cumulative NHL games prior to this season
+    df['total_prev_nhl'] = df.groupby('name')['gp'].cumsum().shift(1).fillna(0)
+
+    # Flag rookies based on new rules
+    df['rookie_flag_1'] = df['gp_prev_season'] <= 25  # Not >25 games in previous season
+    df['rookie_flag_2'] = ~((df['gp_prev_season'] >= 6) & (df['gp_two_seasons_ago'] >= 6))  # Not 6+ in any two preceding seasons
+    df['is_rookie'] = df['rookie_flag_1'] & df['rookie_flag_2'] 
+
+    # Fill any missing numeric values with 0
+    numeric_cols = df.select_dtypes(include=['float64', 'int64']).columns
+    df[numeric_cols] = df[numeric_cols].fillna(0)
+
+    # Optional: drop rows with missing essential info
+    df = df.dropna(subset=['name', 'season', 'gp'])
+
+    # Create output directory if it doesn't exist
+    os.makedirs(os.path.dirname(output_csv), exist_ok=True)
+
+    # Save cleaned CSV
+    df.to_csv(output_csv, index=False)
+    print(f"Cleaned data saved to {output_csv}")
+    print(f"Total rows: {len(df)} | Total rookies flagged: {df['is_rookie'].sum()}")
+
+if __name__ == "__main__":
+    clean_data()
+
+
+import requests
+
+url = "https://www.eliteprospects.com/league/ahl/2012-2013"
+filename = "ahl_2023_2024.html"
+
+headers = {
+    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+                  "AppleWebKit/537.36 (KHTML, like Gecko) "
+                  "Chrome/115.0.0.0 Safari/537.36"
+}
+
+response = requests.get(url, headers=headers)
+response.raise_for_status()  # Stop if request failed
+
+with open(filename, "w", encoding="utf-8") as f:
+    f.write(response.text)
+
+print(f"HTML saved to {filename}")
+
