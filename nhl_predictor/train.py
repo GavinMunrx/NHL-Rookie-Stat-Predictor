@@ -5,7 +5,7 @@ from sklearn.metrics import mean_absolute_error, r2_score
 import os
 
 def run_training():
-    df = pd.read_csv("amateur_to_rookie.csv")
+    df = pd.read_csv("data/processed/amateur_to_rookie.csv")
 
     # One-hot encode league
     league_dummies = pd.get_dummies(df['league_amateur'])
