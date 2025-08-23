@@ -13,8 +13,81 @@ def safe_int(text):
     except ValueError:
         return 0
 
+def scrape_player_stats(league_id, season_label, headers=None):
+    players = []
+    page_counter = 1
+    
+    while True:
+        url_stats = f"https://www.eliteprospects.com/league/{league_id}/stats/{season_label}?page={page_counter}"
+        print(f"Scraping page {page_counter}")
+        
+        response = requests.get(url_stats, headers=headers)
+        if response.status_code != 200:
+            print(f"Failed to retrieve page {page_counter} (status {response.status_code})")
+            break
+        
+        soup = BeautifulSoup(response.text, "html.parser")
+        tables = soup.find_all("table")
+        if len(tables) < 3:
+            print("Stats table not found")
+            break
+        
+        table = tables[2]  # The detailed stats table
+        rows = table.find_all("tr")
+        
+        # If no rows found or only header row, end scraping
+        if len(rows) <= 1:
+            print("No data rows found")
+            break
+        
+        # Process rows
+        for i, row in enumerate(rows[1:]):  # Skip header row
+            cols = row.find_all("td")
+            if len(cols) < 7:
+                continue
+            player = {
+                "season_rank": cols[0].text.strip(),
+                "name": cols[1].text.strip(),
+                "team": cols[2].text.strip(),
+                "gp": safe_int(cols[3].text.strip()),
+                "goals": safe_int(cols[4].text.strip()),
+                "assists": safe_int(cols[5].text.strip()),
+                "points": safe_int(cols[6].text.strip()),
+                "league": league_id,
+                "season": season_label
+            }
+            players.append(player)
+        
+        page_counter += 1
+        
+        time.sleep(random.uniform(1, 3)) # preventing server overload
+    
+    df_stat = pd.DataFrame(players)
+    print(f"Scraped {len(players)} players from {league_id} {season_label}")
+    return df_stat
+
+def scrape_statistics(league, season):
+    table_structure = ['name',
+                       'season',
+                       'season_rank',
+                       "team",
+                        "gp",
+                        "goals",
+                        "assists",
+                        "points",
+                        "league"]
+    
+    df = scrape_player_stats(league, season)
+    return df[table_structure]
+
+
 
 # Needed for Phase 2 of Scraping, which aims to inlude player weight, height, birth year and more.
+# Was able to get roster URL's from league web pages, however these were only for current teams.
+# No expansion teams or teams that changed location include in this so may pivot to selenium solution.
+
+# Scrape roster data works well, issue now is getting the URLs of current and past teams.
+
 
 # def get_team_roster_urls(league, season_label):
 #     league_url = f"https://www.eliteprospects.com/league/{league}/{season_label}"
@@ -142,75 +215,3 @@ def safe_int(text):
     
 #     merged_df = pd.merge(scrape_roster_data(get_team_roster_urls(league, season)), scrape_player_stats(league, season), on='name', how='outer')
 #     return merged_df[table_structure]
-
-
-
-def scrape_player_stats(league_id, season_label, headers=None):
-    players = []
-    page_counter = 1
-    
-    while True:
-        url_stats = f"https://www.eliteprospects.com/league/{league_id}/stats/{season_label}?page={page_counter}"
-        print(f"Scraping page {page_counter}")
-        
-        response = requests.get(url_stats, headers=headers)
-        if response.status_code != 200:
-            print(f"Failed to retrieve page {page_counter} (status {response.status_code})")
-            break
-        
-        soup = BeautifulSoup(response.text, "html.parser")
-        tables = soup.find_all("table")
-        if len(tables) < 3:
-            print("Stats table not found")
-            break
-        
-        table = tables[2]  # The detailed stats table
-        rows = table.find_all("tr")
-        
-        # If no rows found or only header row, end scraping
-        if len(rows) <= 1:
-            print("No data rows found")
-            break
-        
-        # Process rows
-        for i, row in enumerate(rows[1:]):  # Skip header row
-            cols = row.find_all("td")
-            if len(cols) < 7:
-                continue
-            player = {
-                "season_rank": cols[0].text.strip(),
-                "name": cols[1].text.strip(),
-                "team": cols[2].text.strip(),
-                "gp": safe_int(cols[3].text.strip()),
-                "goals": safe_int(cols[4].text.strip()),
-                "assists": safe_int(cols[5].text.strip()),
-                "points": safe_int(cols[6].text.strip()),
-                "league": league_id,
-                "season": season_label
-            }
-            players.append(player)
-        
-        page_counter += 1
-        
-        time.sleep(random.uniform(1, 3)) # preventing server overload
-    
-    df_stat = pd.DataFrame(players)
-    print(f"Scraped {len(players)} players from {league_id} {season_label}")
-    return df_stat
-
-def scrape_statistics(league, season):
-    table_structure = ['name',
-                       'season',
-                       'season_rank',
-                       "team",
-                        "gp",
-                        "goals",
-                        "assists",
-                        "points",
-                        "league"]
-    
-    df = scrape_player_stats(league, season)
-    return df[table_structure]
-
-
-

@@ -2,5 +2,6 @@ requests
 beautifulsoup4
 pandas
 scikit-learn
-fuzzywuzzy
-python-Levenshtein
+time
+random
+os
