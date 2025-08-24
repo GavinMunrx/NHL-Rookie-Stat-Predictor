@@ -3,6 +3,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_absolute_error, r2_score
 import os
+import joblib
 
 def run_training():
     df = pd.read_csv("data/processed/amateur_to_rookie.csv")
@@ -26,3 +27,10 @@ def run_training():
 
     os.makedirs("models", exist_ok=True)
     pd.DataFrame({'actual': y_test, 'predicted': y_pred}).to_csv("models/predictions.csv", index=False)
+
+    # after fitting your model
+    model.fit(X_train, y_train)
+
+    # save model
+    joblib.dump(model, "models/nhl_rookie_predictor.pkl")
+    print("Model saved to models/nhl_rookie_predictor.pkl")

@@ -31,8 +31,8 @@ def run_scraping():
                ]
 
  # Load existing data if available
-    am_path = "data/amateur_all.csv"
-    nhl_path = "data/nhl_all.csv"
+    am_path = "data/raw/amateur_all.csv"
+    nhl_path = "data/raw/nhl_all.csv"
 
     if os.path.exists(am_path):
         amateur_df = pd.read_csv(am_path)
