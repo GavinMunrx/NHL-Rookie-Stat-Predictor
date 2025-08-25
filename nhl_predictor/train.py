@@ -28,9 +28,6 @@ def run_training():
     os.makedirs("models", exist_ok=True)
     pd.DataFrame({'actual': y_test, 'predicted': y_pred}).to_csv("models/predictions.csv", index=False)
 
-    # after fitting your model
-    model.fit(X_train, y_train)
-
     # save model
     joblib.dump(model, "models/nhl_rookie_predictor.pkl")
     print("Model saved to models/nhl_rookie_predictor.pkl")
