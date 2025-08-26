@@ -19,6 +19,7 @@ Current Focus:
 ## Data Preparation
 - **Amateur Data:** Scraped from EliteProspects (OHL, WHL, QMJHL, NCAA, SHL, Liiga, KHL, AHL, etc.).
 - **NHL Rookie Data:** Compiled from 2012–2013 to present, data is excluded from model for 2012-2013 due to lockout season (for now).
+- **NHL Debut Data:** Scraped from Hockey-reference.com with minimal server load, and used in determining players rookie status and rookie year.
 - **Merging:** For each player, their last amateur season before NHL entry was matched with their NHL rookie year stats.
 
 ### Special Considerations
@@ -56,8 +57,6 @@ A **Random Forest Regressor** was trained using amateur player features (games p
 - Engineer **rate stats** like Points per Game (PPG) to handle shortened seasons (COVID, lockouts, injuries). 
 - Include age, height, and weight as predictive features, this will have to be scraped from seperate websites or using Selinium. 
 - Explore more advanced models (XGBoost, Neural Networks).
-- Consider adding player debut data and age of debut from Hockeyreference.com to better identify rookie seasons.
-
 
 ## Replicate Instructions
 - Coming soon ...
