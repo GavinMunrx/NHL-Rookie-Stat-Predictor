@@ -139,48 +139,48 @@
 # print(merged_df)
 
 
-import pandas as pd
-import os
+# import pandas as pd
+# import os
 
-def clean_data(input_csv="data/raw/nhl_all.csv", output_csv="data/processed/cleaned.csv"):
-    print(f"Loading data from {input_csv}...")
-    df = pd.read_csv(input_csv)
+# def clean_data(input_csv="data/raw/nhl_all.csv", output_csv="data/processed/cleaned.csv"):
+#     print(f"Loading data from {input_csv}...")
+#     df = pd.read_csv(input_csv)
 
-    # Standardize column names
-    df.columns = df.columns.str.strip().str.lower()
+#     # Standardize column names
+#     df.columns = df.columns.str.strip().str.lower()
 
-    # Ensure season is sorted properly
-    df = df.sort_values(["name", "season"])
+#     # Ensure season is sorted properly
+#     df = df.sort_values(["name", "season"])
 
-    # Shift previous season NHL games
-    df['gp_prev_season'] = df.groupby('name')['gp'].shift(1).fillna(0)
-    df['gp_two_seasons_ago'] = df.groupby('name')['gp'].shift(2).fillna(0)
+#     # Shift previous season NHL games
+#     df['gp_prev_season'] = df.groupby('name')['gp'].shift(1).fillna(0)
+#     df['gp_two_seasons_ago'] = df.groupby('name')['gp'].shift(2).fillna(0)
 
-    # Calculate cumulative NHL games prior to this season
-    df['total_prev_nhl'] = df.groupby('name')['gp'].cumsum().shift(1).fillna(0)
+#     # Calculate cumulative NHL games prior to this season
+#     df['total_prev_nhl'] = df.groupby('name')['gp'].cumsum().shift(1).fillna(0)
 
-    # Flag rookies based on new rules
-    df['rookie_flag_1'] = df['gp_prev_season'] <= 25  # Not >25 games in previous season
-    df['rookie_flag_2'] = ~((df['gp_prev_season'] >= 6) & (df['gp_two_seasons_ago'] >= 6))  # Not 6+ in any two preceding seasons
-    df['is_rookie'] = df['rookie_flag_1'] & df['rookie_flag_2'] 
+#     # Flag rookies based on new rules
+#     df['rookie_flag_1'] = df['gp_prev_season'] <= 25  # Not >25 games in previous season
+#     df['rookie_flag_2'] = ~((df['gp_prev_season'] >= 6) & (df['gp_two_seasons_ago'] >= 6))  # Not 6+ in any two preceding seasons
+#     df['is_rookie'] = df['rookie_flag_1'] & df['rookie_flag_2'] 
 
-    # Fill any missing numeric values with 0
-    numeric_cols = df.select_dtypes(include=['float64', 'int64']).columns
-    df[numeric_cols] = df[numeric_cols].fillna(0)
+#     # Fill any missing numeric values with 0
+#     numeric_cols = df.select_dtypes(include=['float64', 'int64']).columns
+#     df[numeric_cols] = df[numeric_cols].fillna(0)
 
-    # Optional: drop rows with missing essential info
-    df = df.dropna(subset=['name', 'season', 'gp'])
+#     # Optional: drop rows with missing essential info
+#     df = df.dropna(subset=['name', 'season', 'gp'])
 
-    # Create output directory if it doesn't exist
-    os.makedirs(os.path.dirname(output_csv), exist_ok=True)
+#     # Create output directory if it doesn't exist
+#     os.makedirs(os.path.dirname(output_csv), exist_ok=True)
 
-    # Save cleaned CSV
-    df.to_csv(output_csv, index=False)
-    print(f"Cleaned data saved to {output_csv}")
-    print(f"Total rows: {len(df)} | Total rookies flagged: {df['is_rookie'].sum()}")
+#     # Save cleaned CSV
+#     df.to_csv(output_csv, index=False)
+#     print(f"Cleaned data saved to {output_csv}")
+#     print(f"Total rows: {len(df)} | Total rookies flagged: {df['is_rookie'].sum()}")
 
-if __name__ == "__main__":
-    clean_data()
+# if __name__ == "__main__":
+#     clean_data()
 
 # import pandas as pd
 
@@ -230,44 +230,46 @@ if __name__ == "__main__":
 # merged_df.to_csv("data/processed/merged.csv", index=False)
 # print(f"Merged {len(merged_df)} NHL rookies with their last amateur season")
 
-import pandas as pd
+# import pandas as pd
 
-# Load your CSVs
-amateur_df = pd.read_csv("data/raw/amateur_all.csv")
-nhl_df = pd.read_csv("data/raw/nhl_all.csv")
+# # Load your CSVs
+# amateur_df = pd.read_csv("data/raw/amateur_all.csv")
+# nhl_df = pd.read_csv("data/raw/nhl_all.csv")
 
-# Ensure season is sortable (string or int)
-amateur_df["season"] = amateur_df["season"].astype(str)
-nhl_df["season"] = nhl_df["season"].astype(str)
+# # Ensure season is sortable (string or int)
+# amateur_df["season"] = amateur_df["season"].astype(str)
+# nhl_df["season"] = nhl_df["season"].astype(str)
 
-# Remove 2012-2013 lockout season
-amateur_df = amateur_df[amateur_df["season"] != "2012-2013"]
-nhl_df = nhl_df[nhl_df["season"] != "2012-2013"]
+# # Remove 2012-2013 lockout season
+# amateur_df = amateur_df[amateur_df["season"] != "2012-2013"]
+# nhl_df = nhl_df[nhl_df["season"] != "2012-2013"]
 
-# Get last amateur season
-last_amateur = (amateur_df
-                .sort_values("season")
-                .groupby("name")
-                .tail(1))
+# # Get last amateur season
+# last_amateur = (amateur_df
+#                 .sort_values("season")
+#                 .groupby("name")
+#                 .tail(1))
 
-# Get first NHL season
-first_nhl = (nhl_df
-             .sort_values("season")
-             .groupby("name")
-             .head(1))
+# # Get first NHL season
+# first_nhl = (nhl_df
+#              .sort_values("season")
+#              .groupby("name")
+#              .head(1))
 
-# Ensure rookie NHL season is after last amateur season
-merged = pd.merge(
-    last_amateur,
-    first_nhl,
-    on="name",
-    suffixes=("_amateur", "_nhl")
-)
+# # Ensure rookie NHL season is after last amateur season
+# merged = pd.merge(
+#     last_amateur,
+#     first_nhl,
+#     on="name",
+#     suffixes=("_amateur", "_nhl")
+# )
 
-# Filter rows where NHL season > amateur season
-merged = merged[merged["season_nhl"] > merged["season_amateur"]]
+# # Filter rows where NHL season > amateur season
+# merged = merged[merged["season_nhl"] > merged["season_amateur"]]
 
-# Save merged dataset
-merged.to_csv("amateur_to_rookie.csv", index=False)
-print(f"Merged dataset shape (only valid rookie transitions): {merged.shape}")
+# # Save merged dataset
+# merged.to_csv("amateur_to_rookie.csv", index=False)
+# print(f"Merged dataset shape (only valid rookie transitions): {merged.shape}")
+
+
 

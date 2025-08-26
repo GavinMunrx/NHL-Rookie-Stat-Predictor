@@ -5,7 +5,7 @@ import time
 import random
 
 
-headers = {"User-Agent": "Mozilla/5.0"}
+headers = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.6367.207 Safari/537.36"}
 
 def safe_int(text):
     try:
@@ -80,6 +80,52 @@ def scrape_statistics(league, season):
     df = scrape_player_stats(league, season)
     return df[table_structure]
 
+def scrape_nhl_debuts(year):
+    url = f"https://www.hockey-reference.com/leagues/NHL_{year}_debut.html"
+    print(f"Scraping {url} ...")
+
+    headers = {"User-Agent": "Mozilla/5.0"}
+    response = requests.get(url, headers=headers)
+    
+    time.sleep(random.uniform(2, 5)) # preventing server overload
+    
+    if response.status_code != 200:
+        print(f"Failed to retrieve page {year} (status {response.status_code})")
+        return pd.DataFrame()
+
+    soup = BeautifulSoup(response.text, "html.parser")
+    table = soup.find("table", {"id": "debuts"})
+    if not table:
+        print("Debuts table not found")
+        return pd.DataFrame()
+
+    rows = table.find("tbody").find_all("tr")
+    players = []
+
+    for row in rows:
+        cols = row.find_all("td")
+        if not cols:
+            continue  # skip separator/header rows
+
+        player = {
+            "name": cols[0].text.strip(),
+            "debut_age": cols[1].text.strip(),
+            "debut_date": cols[2].text.strip(),
+            "team": cols[3].text.strip(),
+            "date_of_birth": cols[4].text.strip(),
+            "pos": cols[7].text.strip(),
+            "season": f"{year-1}-{year}"
+        }
+        players.append(player)
+
+    df = pd.DataFrame(players)
+    
+    df = df[df['debut_age'].notna() & (df['debut_age'].str.strip() != '')]
+    
+    filtered_df = df[(df['pos'] != 'G') & (df['debut_age'].str[:2].astype(int) <= 25)]
+    
+    print(f"Scraped {len(players)} players from NHL {year}")
+    return filtered_df
 
 
 # Needed for Phase 2 of Scraping, which aims to inlude player weight, height, birth year and more.

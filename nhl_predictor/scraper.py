@@ -1,4 +1,5 @@
 from nhl_predictor.scraper_utils import scrape_statistics
+from nhl_predictor.scraper_utils import scrape_nhl_debuts
 import os
 import pandas as pd
 
@@ -33,6 +34,7 @@ def run_scraping():
  # Load existing data if available
     am_path = "data/raw/amateur_all.csv"
     nhl_path = "data/raw/nhl_all.csv"
+    debut_path = "data/raw/nhl_debuts.csv"
 
     if os.path.exists(am_path):
         amateur_df = pd.read_csv(am_path)
@@ -43,9 +45,16 @@ def run_scraping():
         nhl_df = pd.read_csv(nhl_path)
     else:
         nhl_df = pd.DataFrame()
+        
+    if os.path.exists(debut_path):
+        debut_df = pd.read_csv(debut_path)
+    else:
+        debut_df = pd.DataFrame()
+
 
     all_amateur = []
     all_nhl = []
+    nhl_debuts = []
 
     os.makedirs("data", exist_ok=True)
 
@@ -77,6 +86,21 @@ def run_scraping():
             all_nhl.append(players_pro)
         except Exception as e:
             print(f"Error scraping NHL rookies {season}: {e}")
+            
+    # NHL debuts
+    for season in seasons:
+        year = int(season[5:])
+        if not debut_df.empty and (debut_df["season"] == season).any():
+            print(f"NHL debut {season}, already scraped.")
+            continue
+
+        try:
+            debut = scrape_nhl_debuts(year)
+            debut["season"] = season
+            nhl_debuts.append(debut)
+        except Exception as e:
+            print(f"Error scraping NHL rookies {season}: {e}")
+            
 
     # Save new data only if there is some
     if all_amateur:
@@ -88,5 +112,10 @@ def run_scraping():
         new_nhl_df = pd.concat(all_nhl, ignore_index=True)
         nhl_df = pd.concat([nhl_df, new_nhl_df], ignore_index=True)
         nhl_df.to_csv(nhl_path, index=False)
+        
+    if nhl_debuts:
+        new_debut_df = pd.concat(nhl_debuts, ignore_index=True)
+        debut_df = pd.concat([debut_df, new_debut_df], ignore_index=True)
+        debut_df.to_csv(debut_path, index=False)
 
-    print(f"Saved {len(all_amateur)} new amateur seasons, {len(all_nhl)} new NHL seasons.")
+    print(f"Saved {len(all_amateur)} new amateur seasons, {len(all_nhl)} new NHL seasons, and {len(nhl_debuts)} new NHL debuts.")
