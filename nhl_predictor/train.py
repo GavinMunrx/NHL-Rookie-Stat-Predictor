@@ -29,5 +29,10 @@ def run_training():
     pd.DataFrame({'actual': y_test, 'predicted': y_pred}).to_csv("models/predictions.csv", index=False)
 
     # save model
-    joblib.dump(model, "models/nhl_rookie_predictor.pkl")
+    # inside run_training()
+    feature_columns = X.columns.tolist()
+
+    # save model + feature names
+    joblib.dump((model, feature_columns), "models/nhl_rookie_predictor.pkl")
+
     print("Model saved to models/nhl_rookie_predictor.pkl")
