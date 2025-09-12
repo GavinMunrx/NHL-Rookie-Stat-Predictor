@@ -1,5 +1,5 @@
 from nhl_predictor.scraper import run_scraping
-from nhl_predictor.train import run_training
+from nhl_predictor.train import run_training_dual
 
 if __name__ == "__main__":
     # print("Step 1: Scraping data...")
@@ -7,4 +7,4 @@ if __name__ == "__main__":
     
     # # run_cleaning
     
-    run_training()  
+    run_training_dual()

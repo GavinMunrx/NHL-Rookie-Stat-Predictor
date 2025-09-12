@@ -16,17 +16,20 @@ Current Focus:
 
 ---
 
-## Data Preparation
+## Data Preparation & Cleaning
 - **Amateur Data:** Scraped from EliteProspects (OHL, WHL, QMJHL, NCAA, SHL, Liiga, KHL, AHL, etc.).
 - **NHL Rookie Data:** Compiled from 2012–2013 to present, data is excluded from model for 2012-2013 due to lockout season (for now).
 - **NHL Debut Data:** Scraped from Hockey-reference.com with minimal server load, and used in determining players rookie status and rookie year.
+- **NHL Bio Data:** Downloaded from moneypuck.com containing birth year, height and weight data.
 - **Merging:** For each player, their last amateur season before NHL entry was matched with their NHL rookie year stats.
+- **Filtering:** Only include amateur seasons with ≥5 games to reduce noise from small sample sizes.
 
 ### Special Considerations
 - Removed **2012–13 NHL season** due to lockout (inconsistent games played).
 - Ensured rookie season appears **after** amateur stats chronologically.
 - Players are considered rookies based on NHL definition:
   - Fewer than 25 NHL games played in prior seasons.
+  - Fewer then 6 games in each of the past 2 seasons
   - Under age 26.
 
 ---
@@ -46,17 +49,50 @@ A **Random Forest Regressor** was trained using amateur player features (games p
 ---
 
 ## Interpretation
-- The model has **predictive value** but isn’t highly accurate yet, esoecially given the variance with Rookie stats and all the factors that contribute to success, further features must be created,
+- The model has **predictive value** but isn’t highly accurate yet, esoecially given the variance with Rookie stats and all the factors that contribute to success, further features must be created.
 - This confirms feasibility: historical amateur stats **can correlate** with NHL rookie scoring, though more features are needed to prove this further.
 - In looking over the CSV file used to train the model, many rookies are excluded as they spent time in a different league during the same year. Thus I must adjust the code to account for this as the file only contained ~90 players, however the true number should be much higher.
 
 ---
 
-## Next Steps (Phase 2)
-- Create league strength adjustment factors (e.g., SHL > OHL > NCAA) to fine tune. 
-- Engineer **rate stats** like Points per Game (PPG) to handle shortened seasons (COVID, lockouts, injuries). 
-- Include age, height, and weight as predictive features, this will have to be scraped from seperate websites or using Selinium. 
-- Explore more advanced models (XGBoost, Neural Networks).
+# Phase 2
 
-## Replicate Instructions
+**Improvements:**
+- Filtered amateur seasons with **≥5 games** to reduce noise.
+- Added player attributes: **age at rookie start, height, weight**.
+- One-hot encoded **amateur league**.
+- Tuned Random Forest and XGBoost using `RandomizedSearchCV`.
+- Increased n_estimators, optimized max_depth, adjusted random_state, adjusted min_samples, learning_rate, and much more.
+
+### Features
+- points per game professional and amateur
+- Age, height, weight
+- League encoding (one-hot)
+
+### Latest Results
+| Model        | MAE   | R²   |
+|--------------|-------|------|
+| Random Forest| 6.13  | 0.20 |
+| XGBoost      | 6.03  | 0.21 |
+
+**Observations:**
+- Filtering and hyperparameter tuning significantly reduced MAE compared to Phase 1.
+- XGBoost slightly outperforms Random Forest in both MAE and R².
+- Models capture more predictive signal but still miss variance caused by role, team context, and injuries.
+
+## UPDATED Interpretation
+- The model has an even greater **predictive value** and has become much more accurate. With extreme improvements in the MAE, the model is still not able to explain much of the variance in rookie statistics.
+- The cleaned CSV makes training much easier and more accurate.
+- Going even deeper into more niche features could aid in explaining the variance at a deeper level.
+
+---
+
+## Next Steps (Phase 3)
+- Apply **league strength adjustments** (SHL > OHL > NCAA) for refined predictions.  
+- Consider **ensemble methods** (Random Forest + XGBoost) for improved stability.  
+- Explore **neural networks** or other advanced models for further performance gains.  
+
+---
+
+## Replication Instructions
 - Coming soon ...
