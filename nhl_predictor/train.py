@@ -10,12 +10,8 @@ def run_training_dual():
     # Load cleaned data
     df = pd.read_csv("data/processed/amateur_to_rookie_with_bio.csv")
 
-    # Filter out players with very few amateur games
-    df = df[df['gp_amateur'] >= 5]
-
-    # One-hot encode league
-    league_dummies = pd.get_dummies(df['league_amateur'])
-    df = pd.concat([df, league_dummies], axis=1)
+    league_hardcode = pd.get_dummies(df['league_amateur'])
+    df = pd.concat([df, league_hardcode], axis=1)
 
     # Feature engineering
     df['age_at_rookie_start'] = df['age_at_rookie_start'].fillna(df['age_at_rookie_start'].median())
@@ -24,12 +20,12 @@ def run_training_dual():
 
     # Features and target
     feature_cols = ['gp_amateur', 'goals_amateur', 'assists_amateur', 'points_amateur',
-                    'age_at_rookie_start', 'weight', 'height'] + list(league_dummies.columns)
-    X = df[feature_cols]
+                    'age_at_rookie_start', 'weight', 'height'] + list(league_hardcode.columns)
+    x = df[feature_cols]
     y = df['points_nhl']
 
     # Train/test split
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
 
     # ---------------- Random Forest ----------------
     rf = RandomForestRegressor(n_jobs=-1, random_state=55)
