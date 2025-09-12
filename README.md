@@ -58,11 +58,13 @@ A **Random Forest Regressor** was trained using amateur player features (games p
 # Phase 2
 
 **Improvements:**
-- Filtered amateur seasons with **≥5 games** to reduce noise.
+- Filtered amateur and professional seasons with **≥15 games** to reduce noise and outliers.
 - Added player attributes: **age at rookie start, height, weight**.
 - One-hot encoded **amateur league**.
 - Tuned Random Forest and XGBoost using `RandomizedSearchCV`.
+- Added 3rd model training combining XGBoost with PPG data instead of total points data.
 - Increased n_estimators, optimized max_depth, adjusted random_state, adjusted min_samples, learning_rate, and much more.
+- Created .ipynb for data visualization and outlier detection for further imporvements. 
 
 ### Features
 - points per game professional and amateur
@@ -70,10 +72,11 @@ A **Random Forest Regressor** was trained using amateur player features (games p
 - League encoding (one-hot)
 
 ### Latest Results
-| Model        | MAE   | R²   |
-|--------------|-------|------|
-| Random Forest| 6.13  | 0.20 |
-| XGBoost      | 6.03  | 0.21 |
+| Model         |  MAE  |  R²   |
+|---------------|-------|-------|
+| Random Forest | 7.11  | 0.327 |
+| XGBoost       | 6.92  | 0.384 |
+| XGBoost (ppg) |  0.1  | 0.216 |
 
 **Observations:**
 - Filtering and hyperparameter tuning significantly reduced MAE compared to Phase 1.

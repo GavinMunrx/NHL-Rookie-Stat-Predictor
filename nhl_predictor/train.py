@@ -17,6 +17,8 @@ def run_training_dual():
     df['age_at_rookie_start'] = df['age_at_rookie_start'].fillna(df['age_at_rookie_start'].median())
     df['weight'] = df['weight'].fillna(df['weight'].median())
     df['height'] = df['height'].fillna(df['height'].median())
+    df = df[df['gp_nhl']>=15]
+    df = df[df['gp_amateur']>=15]
 
     # Features and target
     feature_cols = ['gp_amateur', 'goals_amateur', 'assists_amateur', 'points_amateur',
@@ -69,3 +71,37 @@ def run_training_dual():
     joblib.dump((rf_best, feature_cols), "models/nhl_rookie_predictor_rf.pkl")
     joblib.dump((xgb_best, feature_cols), "models/nhl_rookie_predictor_xgb.pkl")
     print("\nModels saved to models/nhl_rookie_predictor_rf.pkl and models/nhl_rookie_predictor_xgb.pkl")
+
+# ---------------- XGBoost Using PPG ----------------
+
+   # Features and target
+    feature_cols = ['ppg_amateur',
+                    'age_at_rookie_start', 'weight', 'height'] + list(league_hardcode.columns)
+    x = df[feature_cols]
+    y = df['ppg_nhl']
+
+    # Train/test split
+    X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
+    
+    xgb_model = xgb.XGBRegressor(objective='reg:squarederror', n_jobs=-1, random_state=55)
+    xgb_params = {
+        'n_estimators': [200, 300, 400],
+        'max_depth': [3, 5, 7],
+        'learning_rate': [0.01, 0.05, 0.1],
+        'subsample': [0.7, 0.8, 1.0],
+        'colsample_bytree': [0.7, 0.8, 1.0]
+    }
+    xgb_search = RandomizedSearchCV(xgb_model, xgb_params, n_iter=10, cv=3, scoring='neg_mean_absolute_error', random_state=55)
+    xgb_search.fit(X_train, y_train)
+    xgb_best = xgb_search.best_estimator_
+    xgb_pred = xgb_best.predict(X_test)
+
+    print("\nXGBoost Evaluation:")
+    print("Best Params:", xgb_search.best_params_)
+    print("MAE:", mean_absolute_error(y_test, xgb_pred))
+    print("R^2 Score:", r2_score(y_test, xgb_pred))
+
+    # Save models
+    os.makedirs("models", exist_ok=True)
+    joblib.dump((xgb_best, feature_cols), "models/nhl_rookie_predictor_xgb_ppg.pkl")
+    print("\nModel saved")
